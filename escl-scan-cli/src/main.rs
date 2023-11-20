@@ -24,9 +24,8 @@ struct Args {
     #[arg(long = "host", required = true)]
     host: String,
 
-    // , default_value = "scan.jpg"
     /// Output file name
-    #[arg(value_name = "OUTPUT_FILE_NAME")]
+    #[arg(value_name = "OUTPUT_FILE_NAME", default_value = "scan.jpg")]
     output_file_name: String,
 }
 
