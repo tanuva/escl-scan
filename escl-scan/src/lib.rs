@@ -111,19 +111,34 @@ fn get_scan_response(
 }
 
 fn download_scan(download_url: &str, destination_file: &str) -> Result<(), ScannerError> {
-    log::info!("Downloading output file to {}...", destination_file);
-    let mut response = match reqwest::blocking::get(download_url) {
-        Ok(response) => response,
-        Err(err) => return Err(err.into()),
-    };
+    // We need to try downloadng at least once again, expecting a 404, to make
+    // sure we got everything.
+    // This is necessary on my Brother MFC-L2710DW to get it to idle state
+    // again. It will wait for timeout otherwise, even if we got the scanned
+    // page earlier.
+    let mut page: u16 = 1;
+    loop {
+        log::info!("Downloading page {page} to {destination_file}");
+        let mut response = match reqwest::blocking::get(download_url) {
+            Ok(response) => response,
+            Err(err) => return Err(err.into()),
+        };
 
-    let mut file = match File::create(destination_file) {
-        Ok(file) => file,
-        Err(err) => return Err(err.into()),
-    };
+        if response.status() == 404 {
+            log::info!("There is no page {page}, we're done");
+            break;
+        }
 
-    if let Err(err) = response.copy_to(&mut file) {
-        return Err(err.into());
+        let mut file = match File::create(destination_file) {
+            Ok(file) => file,
+            Err(err) => return Err(err.into()),
+        };
+
+        if let Err(err) = response.copy_to(&mut file) {
+            return Err(err.into());
+        }
+
+        page += 1;
     }
 
     Ok(())
