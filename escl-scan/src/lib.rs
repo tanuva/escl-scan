@@ -6,6 +6,7 @@ extern crate reqwest;
 extern crate serde;
 extern crate serde_xml_rs;
 
+pub mod scanner;
 pub mod scannererror;
 pub mod structs;
 
