@@ -13,6 +13,7 @@ use crate::scannererror::ErrorCode;
 use crate::scannererror::ScannerError;
 use reqwest::blocking::Response;
 use std::fs::File;
+use structs::ScannerState;
 
 pub fn scan(
     scanner_base_path: &str,
@@ -82,6 +83,26 @@ pub fn get_scanner_capabilities(
             Err(err) => return Err(err.into()),
         };
     Ok(scanner_capabilities)
+}
+
+pub fn get_scanner_status(scanner_base_path: &str) -> Result<ScannerState, ScannerError> {
+    log::info!("Getting scanner status");
+    let response = match reqwest::blocking::get(&format!("{}/ScannerStatus", scanner_base_path)) {
+        Ok(response) => response,
+        Err(err) => return Err(err.into()),
+    };
+    log::debug!("ScannerStatus: {:?}", response);
+
+    let response_string = response.text().expect("text is a string");
+    log::debug!("ScannerStatus: {:?}", response_string);
+
+    let scanner_status: structs::ScannerStatus = match serde_xml_rs::from_str(&response_string) {
+        Ok(status) => status,
+        Err(err) => return Err(err.into()),
+    };
+
+    log::info!("Scanner state: {}", scanner_status.state);
+    Ok(scanner_status.state)
 }
 
 fn get_scan_response(

@@ -24,6 +24,10 @@ struct Args {
     #[arg(long = "host", required = true)]
     host: String,
 
+    /// Print scanner info and exit
+    #[arg(short, long)]
+    info: bool,
+
     /// Output file name
     #[arg(value_name = "OUTPUT_FILE_NAME", default_value = "scan.jpg")]
     output_file_name: String,
@@ -37,6 +41,19 @@ fn main() {
     if !args.overwrite && Path::new(&args.output_file_name).exists() {
         eprintln!("Output file exists, exiting...");
         exit(1);
+    }
+
+    match scan::get_scanner_status(&scanner_base_path) {
+        Ok(state) => println!("Scanner state: {state}"),
+        Err(err) => {
+            eprintln!("Failed to get status: {err:?}");
+            exit(1);
+        }
+    }
+
+    // TODO This is just a band-aid for testing
+    if args.info {
+        exit(0);
     }
 
     if let Err(err) = scan::scan(&scanner_base_path, args.dpi, &args.output_file_name) {

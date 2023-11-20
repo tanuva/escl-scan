@@ -4,6 +4,8 @@
 
 extern crate serde;
 
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Debug, Deserialize)]
@@ -92,6 +94,32 @@ pub struct ScannerCapabilities {
     pub supported_media_types: SupportedMediaTypes,
     #[serde(rename = "SharpenSupport", default)]
     pub sharpen_support: SharpenSupport,
+}
+
+#[derive(Default, Debug, Deserialize)]
+#[serde(rename = "State")]
+pub enum ScannerState {
+    Idle,
+    Processing,
+    Testing,
+    Stopped,
+    #[default]
+    Down,
+}
+
+impl Display for ScannerState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", *self)
+    }
+}
+
+#[derive(Default, Debug, Deserialize)]
+#[serde(rename = "scan:ScannerStatus")]
+pub struct ScannerStatus {
+    #[serde(rename = "State")]
+    pub state: ScannerState,
+    #[serde(rename = "AdfState")]
+    pub adf_state: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
