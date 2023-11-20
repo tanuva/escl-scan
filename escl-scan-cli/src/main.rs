@@ -17,7 +17,7 @@ struct Args {
     overwrite: bool,
 
     /// Scan resolution in DPI (Dots Per Inch)
-    #[arg(short, long, default_value = "75")]
+    #[arg(short = 'r', long = "resolution", default_value = "75")]
     dpi: i16,
 
     /// IP or hostname of the scanner
