@@ -6,6 +6,7 @@ extern crate clap;
 extern crate scan;
 
 use clap::Parser;
+use scan::scanner::Scanner;
 use std::path::Path;
 use std::process::exit;
 
@@ -36,14 +37,14 @@ struct Args {
 fn main() {
     env_logger::init();
     let args = Args::parse();
-    let scanner_base_path = format!("http://{}:80/eSCL", args.host);
 
     if !args.overwrite && Path::new(&args.output_file_name).exists() {
         eprintln!("Output file exists, exiting...");
         exit(1);
     }
 
-    match scan::get_scanner_status(&scanner_base_path) {
+    let scanner = Scanner::new(args.host, None);
+    match scanner.get_status() {
         Ok(state) => println!("Scanner state: {state}"),
         Err(err) => {
             eprintln!("Failed to get status: {err:?}");
@@ -56,7 +57,7 @@ fn main() {
         exit(0);
     }
 
-    if let Err(err) = scan::scan(&scanner_base_path, args.dpi, &args.output_file_name) {
+    if let Err(err) = scanner.scan(args.dpi, &args.output_file_name) {
         eprintln!("Failed to scan: {err:?}");
         exit(1);
     }
