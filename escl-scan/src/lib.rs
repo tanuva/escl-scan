@@ -84,7 +84,7 @@ pub fn get_scanner_capabilities(
     Ok(scanner_capabilities)
 }
 
-pub fn get_scan_response(
+fn get_scan_response(
     scanner_base_path: &str,
     request_body: String,
 ) -> Result<Response, ScannerError> {
@@ -110,7 +110,7 @@ pub fn get_scan_response(
     return Ok(response);
 }
 
-pub fn download_scan(download_url: &str, destination_file: &str) -> Result<(), ScannerError> {
+fn download_scan(download_url: &str, destination_file: &str) -> Result<(), ScannerError> {
     log::info!("Downloading output file to {}...", destination_file);
     let mut response = match reqwest::blocking::get(download_url) {
         Ok(response) => response,
