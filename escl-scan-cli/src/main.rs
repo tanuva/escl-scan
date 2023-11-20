@@ -6,9 +6,9 @@
 extern crate clap;
 extern crate scan;
 
-use std::process::exit;
-use std::path::Path;
 use clap::{Arg, Command};
+use std::path::Path;
+use std::process::exit;
 
 fn main() {
     env_logger::init();
@@ -18,12 +18,7 @@ fn main() {
         .author(crate_authors!())
         .about(crate_description!())
         .arg_required_else_help(true)
-        .arg(
-            Arg::new("ip")
-                .help("IP of scanner")
-                .index(1)
-                .required(true),
-        )
+        .arg(Arg::new("ip").help("IP of scanner").index(1).required(true))
         .arg(
             Arg::new("destination file")
                 .help("Destination file")
