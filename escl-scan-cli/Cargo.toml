@@ -1,8 +1,8 @@
 [package]
 name = "escl-scan-cli"
-version = "0.1.3"
 authors = ["ElXreno <elxreno@gmail.com>"]
 repository = "https://github.com/ElXreno/escl-scan"
+version = "0.1.4"
 readme = "README.md"
 license = "MPL-2.0"
 keywords = [
@@ -13,8 +13,8 @@ categories = ["command-line-utilities"]
 description = """
 CLI for escl-scan
 """
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-clap = { version = "4.2.4", features = ["cargo"] }
+clap = { version = "4.4.*", features = ["cargo"] }
 scan = { package="escl-scan", path="../escl-scan" }

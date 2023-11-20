@@ -3,6 +3,7 @@ members = [
     "escl-scan",
     "escl-scan-cli",
 ]
+resolver = "2"
 
 # Profiles
 [profile.release]
