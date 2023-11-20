@@ -47,9 +47,11 @@ fn main() {
     let destination_file = matches.get_one::<String>("destination file").unwrap();
 
     if !matches.contains_id("force") && Path::new(destination_file).exists() {
-        eprintln!("Output file exists! Exiting...");
+        eprintln!("Output file exists, exiting...");
         exit(1);
     }
 
-    scan::scan(&scanner_base_path, *scan_resolution, destination_file);
+    if let Err(err) = scan::scan(&scanner_base_path, *scan_resolution, destination_file) {
+        eprintln!("Failed to scan: {err:?}");
+    }
 }

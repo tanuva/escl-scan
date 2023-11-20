@@ -6,14 +6,24 @@ extern crate reqwest;
 extern crate serde;
 extern crate serde_xml_rs;
 
+pub mod scannererror;
 pub mod structs;
 
+use crate::scannererror::ErrorCode;
+use crate::scannererror::ScannerError;
 use reqwest::blocking::Response;
 use std::fs::File;
 
-pub fn scan(scanner_base_path: &str, scan_resolution: i16, destination_file: &str) {
+pub fn scan(
+    scanner_base_path: &str,
+    scan_resolution: i16,
+    destination_file: &str,
+) -> Result<(), ScannerError> {
     log::info!("Getting scanner capabilities...");
-    let scanner_capabilities = get_scanner_capabilities(&scanner_base_path);
+    let scanner_capabilities = match get_scanner_capabilities(&scanner_base_path) {
+        Ok(caps) => caps,
+        Err(err) => return Err(err),
+    };
 
     let scan_settings: structs::ScanSettings = structs::ScanSettings {
         version: "2.6".to_string(),
@@ -30,53 +40,91 @@ pub fn scan(scanner_base_path: &str, scan_resolution: i16, destination_file: &st
         y_resolution: scan_resolution,
     };
 
-    let request_body = serde_xml_rs::to_string(&scan_settings).unwrap();
+    let request_body = match serde_xml_rs::to_string(&scan_settings) {
+        Ok(body) => body,
+        Err(err) => return Err(err.into()),
+    };
 
     log::info!("Sending scan request with DPI {}...", scan_resolution);
-    let scan_response = get_scan_response(scanner_base_path, request_body);
+    let scan_response = match get_scan_response(scanner_base_path, request_body) {
+        Ok(response) => response,
+        Err(err) => return Err(err),
+    };
+    let location = match scan_response.headers().get("location") {
+        Some(location) => location.to_str().expect("'location' can be a string"),
+        None => {
+            return Err(ScannerError {
+                code: ErrorCode::ProtocolError,
+                message: format!(
+                    "Failed to get 'location' header from response:\n{scan_response:?}"
+                ),
+            });
+        }
+    };
 
-    let download_url = format!(
-        "{}/NextDocument",
-        scan_response
-            .headers()
-            .get("location")
-            .unwrap()
-            .to_str()
-            .unwrap()
-    );
-
-    log::info!("Downloading output file to {}...", destination_file);
-    download_scan(&download_url, destination_file);
+    let download_url = format!("{}/NextDocument", location);
+    return download_scan(&download_url, destination_file);
 }
 
-pub fn get_scanner_capabilities(scanner_base_path: &str) -> structs::ScannerCapabilities {
-    let scanner_capabilities_response =
-        reqwest::blocking::get(&format!("{}/ScannerCapabilities", scanner_base_path))
-            .unwrap()
-            .text()
-            .unwrap();
+pub fn get_scanner_capabilities(
+    scanner_base_path: &str,
+) -> Result<structs::ScannerCapabilities, ScannerError> {
+    let response =
+        match reqwest::blocking::get(&format!("{}/ScannerCapabilities", scanner_base_path)) {
+            Ok(response) => response,
+            Err(err) => return Err(err.into()),
+        };
 
+    let scanner_capabilities_response_string = response.text().expect("text is a string");
     let scanner_capabilities: structs::ScannerCapabilities =
-        serde_xml_rs::from_str(&scanner_capabilities_response).unwrap();
-
-    scanner_capabilities
+        match serde_xml_rs::from_str(&scanner_capabilities_response_string) {
+            Ok(caps) => caps,
+            Err(err) => return Err(err.into()),
+        };
+    Ok(scanner_capabilities)
 }
 
-pub fn get_scan_response(scanner_base_path: &str, request_body: String) -> Response {
+pub fn get_scan_response(
+    scanner_base_path: &str,
+    request_body: String,
+) -> Result<Response, ScannerError> {
     let client = reqwest::blocking::Client::new();
-
-    client
+    let request = client
         .post(format!("{}/ScanJobs", &scanner_base_path).as_str())
         .body(format!(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{}",
             request_body
-        ))
-        .send()
-        .unwrap()
+        ));
+    let response = match request.send() {
+        Ok(response) => response,
+        Err(err) => return Err(err.into()),
+    };
+
+    if !response.status().is_success() {
+        return Err(ScannerError {
+            code: ErrorCode::NetworkError,
+            message: format!("{response:?}"),
+        });
+    }
+
+    return Ok(response);
 }
 
-pub fn download_scan(download_url: &str, destination_file: &str) {
-    let mut file = { File::create(destination_file).unwrap() };
+pub fn download_scan(download_url: &str, destination_file: &str) -> Result<(), ScannerError> {
+    log::info!("Downloading output file to {}...", destination_file);
+    let mut response = match reqwest::blocking::get(download_url) {
+        Ok(response) => response,
+        Err(err) => return Err(err.into()),
+    };
 
-    reqwest::blocking::get(download_url).unwrap().copy_to(&mut file).unwrap();
+    let mut file = match File::create(destination_file) {
+        Ok(file) => file,
+        Err(err) => return Err(err.into()),
+    };
+
+    if let Err(err) = response.copy_to(&mut file) {
+        return Err(err.into());
+    }
+
+    Ok(())
 }
