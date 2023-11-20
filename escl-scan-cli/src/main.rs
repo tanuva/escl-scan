@@ -11,6 +11,8 @@ use std::path::Path;
 use clap::{Arg, Command};
 
 fn main() {
+    env_logger::init();
+
     let matches = Command::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
@@ -54,6 +56,4 @@ fn main() {
     }
 
     scan::scan(&scanner_base_path, *scan_resolution, destination_file);
-
-    println!("Done!");
 }

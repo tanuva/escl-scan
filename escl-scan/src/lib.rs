@@ -12,7 +12,7 @@ use reqwest::blocking::Response;
 use std::fs::File;
 
 pub fn scan(scanner_base_path: &str, scan_resolution: i16, destination_file: &str) {
-    println!("Getting scanner capabilities...");
+    log::info!("Getting scanner capabilities...");
     let scanner_capabilities = get_scanner_capabilities(&scanner_base_path);
 
     let scan_settings: structs::ScanSettings = structs::ScanSettings {
@@ -32,7 +32,7 @@ pub fn scan(scanner_base_path: &str, scan_resolution: i16, destination_file: &st
 
     let request_body = serde_xml_rs::to_string(&scan_settings).unwrap();
 
-    println!("Sending scan request with DPI {}...", scan_resolution);
+    log::info!("Sending scan request with DPI {}...", scan_resolution);
     let scan_response = get_scan_response(scanner_base_path, request_body);
 
     let download_url = format!(
@@ -45,7 +45,7 @@ pub fn scan(scanner_base_path: &str, scan_resolution: i16, destination_file: &st
             .unwrap()
     );
 
-    println!("Downloading output file to {}...", destination_file);
+    log::info!("Downloading output file to {}...", destination_file);
     download_scan(&download_url, destination_file);
 }
 
