@@ -21,8 +21,8 @@ struct Args {
     dpi: i16,
 
     /// IP or hostname of the scanner
-    #[arg(value_name = "SCANNER_IP")]
-    ip: String,
+    #[arg(long = "host", required = true)]
+    host: String,
 
     // , default_value = "scan.jpg"
     /// Output file name
@@ -33,7 +33,7 @@ struct Args {
 fn main() {
     env_logger::init();
     let args = Args::parse();
-    let scanner_base_path = format!("http://{}:80/eSCL", args.ip);
+    let scanner_base_path = format!("http://{}:80/eSCL", args.host);
 
     if !args.overwrite && Path::new(&args.output_file_name).exists() {
         eprintln!("Output file exists, exiting...");
