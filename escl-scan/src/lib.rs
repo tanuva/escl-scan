@@ -75,9 +75,9 @@ pub fn get_scanner_capabilities(
             Err(err) => return Err(err.into()),
         };
 
-    let scanner_capabilities_response_string = response.text().expect("text is a string");
+    let response_string = response.text().expect("text is a string");
     let scanner_capabilities: structs::ScannerCapabilities =
-        match serde_xml_rs::from_str(&scanner_capabilities_response_string) {
+        match serde_xml_rs::from_str(&response_string) {
             Ok(caps) => caps,
             Err(err) => return Err(err.into()),
         };
