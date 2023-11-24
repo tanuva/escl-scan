@@ -11,7 +11,7 @@ keywords = [
 ]
 categories = ["api-bindings"]
 description = """
-A library for scanning documents over LAN or Wi-Fi using eSCL protocol.
+A library for scanning documents over LAN or Wi-Fi using the eSCL protocol.
 """
 edition = "2021"
 
