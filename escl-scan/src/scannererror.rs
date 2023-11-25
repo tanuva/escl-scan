@@ -4,6 +4,7 @@ use core::fmt;
 pub enum ErrorCode {
     FilesystemError,
     NetworkError,
+    NoScannerFound,
     ProtocolError,
     ScannerNotReady,
 }
@@ -19,6 +20,9 @@ impl fmt::Display for ScannerError {
         let msg = match self.code {
             ErrorCode::FilesystemError => format!("File System Error: {}", self.message),
             ErrorCode::NetworkError => format!("Network Error: {}", self.message),
+            ErrorCode::NoScannerFound => {
+                format!("No scanner found where name contains {}", self.message)
+            }
             ErrorCode::ProtocolError => format!("eSCL Protocol Error: {}", self.message),
             ErrorCode::ScannerNotReady => "The scanner is not ready to scan".to_string(),
         };
@@ -49,6 +53,15 @@ impl From<std::io::Error> for ScannerError {
     fn from(error: std::io::Error) -> Self {
         ScannerError {
             code: ErrorCode::FilesystemError,
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<zeroconf::error::Error> for ScannerError {
+    fn from(error: zeroconf::error::Error) -> Self {
+        ScannerError {
+            code: ErrorCode::NetworkError,
             message: error.to_string(),
         }
     }

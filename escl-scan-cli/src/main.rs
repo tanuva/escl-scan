@@ -7,6 +7,7 @@ extern crate scan;
 
 use clap::{Args, Parser};
 use scan::scanner::Scanner;
+use scan::scannerfinder::ScannerFinder;
 use std::path::Path;
 use std::process::exit;
 
@@ -39,6 +40,33 @@ struct DeviceArgs {
     /// Print information about the scanner identified by device name
     #[arg(short, long)]
     info: Option<String>,
+
+    /// List available scanners
+    #[arg(short, long)]
+    list: bool,
+}
+
+fn list_scanners() {
+    let mut finder = ScannerFinder::new();
+    let scanners = match finder.find(None) {
+        Ok(scanners) => scanners,
+        Err(err) => {
+            eprintln!("Failed to discover scanners: {err}");
+            exit(1);
+        }
+    };
+
+    if scanners.len() == 0 {
+        println!("No scanners found");
+    } else if scanners.len() == 1 {
+        println!("Found 1 scanner:");
+    } else {
+        println!("Found {} scanners:", scanners.len());
+    }
+
+    for scanner in scanners {
+        println!("- {}: {}", scanner.device_name, scanner.base_url);
+    }
 }
 
 fn get_scanner(cli: &Cli) -> Scanner {
@@ -52,6 +80,11 @@ fn get_scanner(cli: &Cli) -> Scanner {
 fn main() {
     env_logger::init();
     let args = Cli::parse();
+
+    if args.device.list {
+        list_scanners();
+        exit(0);
+    }
 
     // TODO This is just a band-aid for testing
     if let Some(name) = args.device.info {

@@ -13,6 +13,7 @@ use crate::{
 use reqwest::blocking::Response;
 use std::fs::File;
 
+#[derive(Clone, Debug)]
 pub struct Scanner {
     pub base_url: String,
     pub device_name: String,
