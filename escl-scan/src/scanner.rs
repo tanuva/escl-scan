@@ -14,18 +14,20 @@ use reqwest::blocking::Response;
 use std::fs::File;
 
 pub struct Scanner {
-    base_url: String,
+    pub base_url: String,
+    pub device_name: String,
 }
 
 impl Scanner {
-    pub fn new(ip_or_host: String, root: Option<String>) -> Scanner {
+    pub fn new(device_name: &str, ip_or_host: &str, root: Option<&str>) -> Scanner {
         let resource_root = if root.is_some() {
             root.unwrap()
         } else {
-            "eSCL".to_string()
+            "eSCL"
         };
 
         Scanner {
+            device_name: device_name.to_string(),
             base_url: format!("http://{}:80/{}", ip_or_host, resource_root),
         }
     }

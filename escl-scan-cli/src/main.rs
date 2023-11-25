@@ -43,7 +43,7 @@ struct DeviceArgs {
 
 fn get_scanner(cli: &Cli) -> Scanner {
     if let Some(host) = &cli.device.host {
-        return Scanner::new(&host, None);
+        return Scanner::new("Manually Configured", &host, None);
     }
 
     panic!("get_scanner called while no device was specified");
