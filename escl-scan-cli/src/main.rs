@@ -19,7 +19,7 @@ struct Cli {
     #[command(flatten)]
     device: DeviceArgs,
 
-    /// Enables overwriting the output file if it already exists
+    /// Overwrite the output file if it already exists
     #[arg(short = 'f', long = "force")]
     overwrite: bool,
 
