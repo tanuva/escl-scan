@@ -33,11 +33,14 @@ struct Cli {
 }
 
 #[derive(Args)]
-#[group(required = true)]
 struct DeviceArgs {
     /// Select scanner by IP or hostname
     #[arg(long = "host")]
     host: Option<String>,
+
+    /// Select scanner by device name (can be partial)
+    #[arg(long, short)]
+    name: Option<String>,
 
     /// Print information about the scanner identified by device name
     #[arg(short, long)]
@@ -71,12 +74,21 @@ fn list_scanners() {
     }
 }
 
-fn get_scanner(cli: &Cli) -> Scanner {
+fn get_scanner(cli: &Cli) -> Result<Scanner, String> {
     if let Some(host) = &cli.device.host {
-        return Scanner::new("Manually Configured", &host, None);
+        return Ok(Scanner::new("Manually Configured", &host, None));
     }
 
-    panic!("get_scanner called while no device was specified");
+    let scanners = match ScannerFinder::new().find(cli.device.name.as_deref()) {
+        Ok(scanners) => scanners,
+        Err(err) => return Err(err.to_string()),
+    };
+
+    if let Some(scanner) = scanners.first() {
+        return Ok(scanner.clone());
+    }
+
+    return Err("No scanners found".to_string());
 }
 
 fn main() {
@@ -93,7 +105,13 @@ fn main() {
         exit(0);
     }
 
-    let scanner = get_scanner(&args);
+    let scanner = match get_scanner(&args) {
+        Ok(scanner) => scanner,
+        Err(err) => {
+            eprintln!("{err}");
+            exit(1);
+        }
+    };
 
     if !args.overwrite && Path::new(&args.output_file_name).exists() {
         eprintln!("Output file exists, exiting...");

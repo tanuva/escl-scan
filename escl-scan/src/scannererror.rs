@@ -27,7 +27,7 @@ impl fmt::Display for ScannerError {
             ErrorCode::FilesystemError => format!("File System Error: {}", self.message),
             ErrorCode::NetworkError => format!("Network Error: {}", self.message),
             ErrorCode::NoScannerFound => {
-                format!("No scanner found where name contains {}", self.message)
+                format!("No scanner found where name contains \"{}\"", self.message)
             }
             ErrorCode::ProtocolError => format!("eSCL Protocol Error: {}", self.message),
             ErrorCode::ScannerNotReady => "The scanner is not ready to scan".to_string(),

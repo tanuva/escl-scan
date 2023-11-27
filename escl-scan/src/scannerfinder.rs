@@ -35,8 +35,7 @@ impl ScannerFinder {
     fn scanner_found(&self, name: &str) -> bool {
         let scanners = self.scanners.lock().unwrap();
         for scanner in scanners.iter() {
-            // TODO Search hostname and device name
-            if scanner.base_url.contains(name) {
+            if scanner.base_url.contains(name) || scanner.device_name.contains(name) {
                 return true;
             }
         }
