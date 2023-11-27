@@ -1,5 +1,8 @@
 [package]
 name = "escl-scan-cli"
+description = """
+Scans documents from an eSCL-speaking scanner on the network. The first
+discovered scanner will be used if neither --name nor --host are provided."""
 version = "0.1.4"
 authors = ["ElXreno <elxreno@gmail.com>", "Marcel Kummer <tanuva@posteo.de>"]
 repository = "https://github.com/tanuva/escl-scan"
@@ -10,9 +13,6 @@ keywords = [
     "scan"
 ]
 categories = ["command-line-utilities"]
-description = """
-CLI for escl-scan
-"""
 edition = "2021"
 
 [dependencies]
