@@ -26,7 +26,6 @@ pub struct ScannerFinder {
 
 impl ScannerFinder {
     pub fn new() -> ScannerFinder {
-        //ScannerFinder { scanners: vec![] }
         ScannerFinder {
             scanners: Arc::new(Mutex::new(vec![])),
         }
@@ -50,8 +49,6 @@ impl ScannerFinder {
 
         let mut browser = MdnsBrowser::new(service_type);
         browser.set_service_discovered_callback(Box::new(Self::on_service_discovered));
-
-        //let scanners: Arc<Mutex<Vec<Scanner>>> = Arc::new(Mutex::new(vec![]));
         browser.set_context(Box::new(Arc::clone(&self.scanners)));
 
         let event_loop = match browser.browse_services() {
@@ -98,12 +95,11 @@ impl ScannerFinder {
         };
 
         log::info!("Service discovered: {service:?}",);
-        //let mut context = context.expect("We provided a scanner list as context");
         let scanners = context
             .as_ref()
-            .unwrap()
+            .expect("Context was passed to on_service_discovered")
             .downcast_ref::<Arc<Mutex<Vec<Scanner>>>>()
-            .unwrap();
+            .expect("context can be downcasted to Arc<Mutex<Vec<Scanner>>>");
         let mut scanners = scanners.lock().unwrap();
 
         let txt: &TxtRecord = match service.txt() {
