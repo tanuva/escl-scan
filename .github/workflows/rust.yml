@@ -20,7 +20,10 @@ jobs:
       with:
         rust-version: ${{ matrix.rust }}
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y libavahi-client-dev
 
     - name: Build release
       run: cargo build --release --verbose
