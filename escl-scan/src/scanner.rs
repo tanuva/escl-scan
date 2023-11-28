@@ -13,7 +13,7 @@ use crate::{
     structs,
 };
 use reqwest::blocking::Response;
-use std::fs::File;
+use std::{fmt::Display, fs::File};
 
 #[derive(Clone, Debug)]
 pub struct Scanner {
@@ -179,5 +179,16 @@ impl Scanner {
         }
 
         Ok(())
+    }
+}
+
+impl Display for Scanner {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}
+- URL: {}
+            self.device_name, self.base_url
+        )
     }
 }

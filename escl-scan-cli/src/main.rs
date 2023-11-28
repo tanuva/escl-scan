@@ -70,7 +70,7 @@ fn list_scanners() {
     }
 
     for scanner in scanners {
-        println!("- {}: {}", scanner.device_name, scanner.base_url);
+        println!("{scanner}");
     }
 }
 
