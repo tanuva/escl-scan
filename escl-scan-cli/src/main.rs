@@ -42,10 +42,6 @@ struct DeviceArgs {
     #[arg(long, short)]
     name: Option<String>,
 
-    /// Print information about the scanner identified by device name
-    #[arg(short, long)]
-    info: Option<String>,
-
     /// List available scanners
     #[arg(short, long)]
     list: bool,
@@ -97,11 +93,6 @@ fn main() {
 
     if args.device.list {
         list_scanners();
-        exit(0);
-    }
-
-    // TODO This is just a band-aid for testing
-    if let Some(name) = args.device.info {
         exit(0);
     }
 
