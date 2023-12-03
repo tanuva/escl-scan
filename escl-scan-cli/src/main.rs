@@ -24,7 +24,7 @@ struct Cli {
     overwrite: bool,
 
     /// Scan resolution in DPI (Dots Per Inch)
-    #[arg(short = 'r', long = "resolution", default_value = "75")]
+    #[arg(short = 'r', long = "resolution", default_value = "300")]
     dpi: i16,
 
     /// Output file name
