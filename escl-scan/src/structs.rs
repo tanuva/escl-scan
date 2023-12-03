@@ -10,13 +10,13 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Debug, Deserialize)]
+#[derive(Clone, Default, Debug, Deserialize)]
 pub struct Platen {
     #[serde(rename = "PlatenInputCaps", default)]
     pub platen_input_caps: PlatenInputCaps,
 }
 
-#[derive(Default, Debug, Deserialize)]
+#[derive(Clone, Default, Debug, Deserialize)]
 pub struct PlatenInputCaps {
     #[serde(rename = "MinWidth", default)]
     pub min_width: u16,
@@ -28,7 +28,8 @@ pub struct PlatenInputCaps {
     pub max_height: i16,
     #[serde(rename = "MaxScanRegions", default)]
     pub max_scan_regions: u16,
-    // TODO: Make SettingProfiles
+    #[serde(rename = "SettingProfiles")]
+    pub setting_profiles: SettingProfiles,
     // TODO: Make SupportedIntents
     #[serde(rename = "MaxOpticalXResolution", default)]
     pub max_optical_xresolution: u16,
@@ -44,7 +45,31 @@ pub struct PlatenInputCaps {
     pub risky_bottom_margin: u16,
 }
 
-#[derive(Default, Debug, Deserialize)]
+#[derive(Clone, Default, Debug, Deserialize)]
+pub struct SettingProfiles {
+    #[serde(rename = "$value")]
+    pub entries: Vec<SettingProfile>,
+}
+
+#[derive(Clone, Default, Debug, Deserialize)]
+pub struct SettingProfile {
+    #[serde(rename = "ColorModes")]
+    pub color_modes: ColorModes,
+}
+
+#[derive(Clone, Default, Debug, Deserialize)]
+pub struct ColorModes {
+    #[serde(rename = "$value")]
+    pub entries: Vec<ColorMode>,
+}
+
+#[derive(Clone, Default, Debug, Deserialize)]
+pub struct ColorMode {
+    #[serde(rename = "$value")]
+    pub mode_name: String,
+}
+
+#[derive(Clone, Default, Debug, Deserialize)]
 pub struct CompressionFactorSupport {
     #[serde(rename = "Min", default)]
     pub min: i8,
@@ -56,13 +81,13 @@ pub struct CompressionFactorSupport {
     pub step: i8,
 }
 
-#[derive(Default, Debug, Deserialize)]
+#[derive(Clone, Default, Debug, Deserialize)]
 pub struct SupportedMediaTypes {
     #[serde(rename = "MediaType", default)]
     pub media_types: Vec<String>,
 }
 
-#[derive(Default, Debug, Deserialize)]
+#[derive(Clone, Default, Debug, Deserialize)]
 pub struct SharpenSupport {
     #[serde(rename = "Min", default)]
     pub min: i8,
@@ -74,7 +99,7 @@ pub struct SharpenSupport {
     pub step: i8,
 }
 
-#[derive(Default, Debug, Deserialize)]
+#[derive(Clone, Default, Debug, Deserialize)]
 pub struct ScannerCapabilities {
     #[serde(rename = "Version", default)]
     pub version: String,
@@ -98,7 +123,7 @@ pub struct ScannerCapabilities {
     pub sharpen_support: SharpenSupport,
 }
 
-#[derive(Default, Debug, Deserialize)]
+#[derive(Default, Debug, Deserialize, PartialEq)]
 #[serde(rename = "State")]
 pub enum ScannerState {
     Idle,

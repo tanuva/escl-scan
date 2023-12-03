@@ -110,20 +110,29 @@ impl ScannerFinder {
             }
         };
 
-        let url_root = txt.get("rs");
+        let url_root = match txt.get("rs") {
+            Some(root) => root,
+            None => {
+                log::warn!("Service has no resource root (rs): {service:?}");
+                return;
+            }
+        };
         let device_name = match txt.get("ty") {
             Some(name) => name,
             None => {
-                log::warn!("Service has no human-readable device name: {service:?}");
+                log::warn!("Service has no human-readable device name (ty): {service:?}");
                 return;
             }
         };
 
-        let scanner = Scanner::new(
-            device_name.as_str(),
-            service.host_name(),
-            url_root.as_ref().map(|s| s.as_str()),
-        );
+        let scanner = match Scanner::new(&device_name, service.host_name(), &url_root) {
+            Ok(scanner) => scanner,
+            Err(err) => {
+                log::warn!("Failed to initialize scanner {device_name}: {err}");
+                return;
+            }
+        };
+
         log::info!("{:?}", scanner);
         scanners.push(scanner);
     }

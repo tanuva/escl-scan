@@ -19,20 +19,46 @@ use std::{fmt::Display, fs::File};
 pub struct Scanner {
     pub base_url: String,
     pub device_name: String,
+    pub capabilities: structs::ScannerCapabilities,
 }
 
 impl Scanner {
-    pub fn new(device_name: &str, ip_or_host: &str, root: Option<&str>) -> Scanner {
-        let resource_root = if root.is_some() {
-            root.unwrap()
-        } else {
-            "eSCL"
+    fn make_base_url(ip_or_host: &str, root: &str) -> String {
+        format!("http://{}:80/{}", ip_or_host, root)
+    }
+
+    fn get_capabilities(base_url: &str) -> Result<structs::ScannerCapabilities, ScannerError> {
+        let response = match reqwest::blocking::get(&format!("{}/ScannerCapabilities", base_url)) {
+            Ok(response) => response,
+            Err(err) => return Err(err.into()),
         };
 
-        Scanner {
+        let response_string = response.text().expect("text is a string");
+        log::debug!("> Capabilities: {response_string}");
+        let scanner_capabilities: structs::ScannerCapabilities =
+            match serde_xml_rs::from_str(&response_string) {
+                Ok(caps) => caps,
+                Err(err) => return Err(err.into()),
+            };
+        Ok(scanner_capabilities)
+    }
+
+    pub fn new(
+        device_name: &str,
+        ip_or_host: &str,
+        resource_root: &str,
+    ) -> Result<Scanner, ScannerError> {
+        let base_url = Scanner::make_base_url(ip_or_host, resource_root);
+        let capabilities = match Self::get_capabilities(&base_url) {
+            Ok(caps) => caps,
+            Err(err) => return Err(err),
+        };
+
+        Ok(Scanner {
             device_name: device_name.to_string(),
-            base_url: format!("http://{}:80/{}", ip_or_host, resource_root),
-        }
+            base_url,
+            capabilities,
+        })
     }
 
     pub fn get_status(&self) -> Result<structs::ScannerState, ScannerError> {
@@ -56,50 +82,34 @@ impl Scanner {
         Ok(scanner_status.state)
     }
 
-    pub fn get_capabilities(&self) -> Result<structs::ScannerCapabilities, ScannerError> {
-        let response =
-            match reqwest::blocking::get(&format!("{}/ScannerCapabilities", self.base_url)) {
-                Ok(response) => response,
-                Err(err) => return Err(err.into()),
-            };
-
-        let response_string = response.text().expect("text is a string");
-        let scanner_capabilities: structs::ScannerCapabilities =
-            match serde_xml_rs::from_str(&response_string) {
-                Ok(caps) => caps,
-                Err(err) => return Err(err.into()),
-            };
-        Ok(scanner_capabilities)
-    }
-
-    pub fn scan(&self, scan_resolution: i16, destination_file: &str) -> Result<(), ScannerError> {
-        log::info!("Getting scanner capabilities...");
-        let scanner_capabilities = match self.get_capabilities() {
-            Ok(caps) => caps,
-            Err(err) => return Err(err),
-        };
-
-        let scan_settings: structs::ScanSettings = structs::ScanSettings {
+    pub fn make_settings(&self) -> structs::ScanSettings {
+        structs::ScanSettings {
             version: "2.6".to_string(),
             scan_regions: structs::ScanRegion {
                 x_offset: 0,
                 y_offset: 0,
-                width: scanner_capabilities.platen.platen_input_caps.max_width,
-                height: scanner_capabilities.platen.platen_input_caps.max_height,
+                width: self.capabilities.platen.platen_input_caps.max_width,
+                height: self.capabilities.platen.platen_input_caps.max_height,
                 content_region_units: "escl:ThreeHundredthsOfInches".to_string(),
             },
             input_source: "Platen".to_string(),
             color_mode: "RGB24".to_string(),
-            x_resolution: scan_resolution,
-            y_resolution: scan_resolution,
-        };
+            x_resolution: 300,
+            y_resolution: 300,
+        }
+    }
 
-        let request_body = match serde_xml_rs::to_string(&scan_settings) {
+    pub fn scan(
+        &self,
+        scan_settings: &structs::ScanSettings,
+        destination_file: &str,
+    ) -> Result<(), ScannerError> {
+        let request_body = match serde_xml_rs::to_string(scan_settings) {
             Ok(body) => body,
             Err(err) => return Err(err.into()),
         };
 
-        log::info!("Sending scan request with DPI {}...", scan_resolution);
+        log::info!("Sending scan request with settings: {:?}", scan_settings);
         let scan_response = match self.get_scan_response(request_body) {
             Ok(response) => response,
             Err(err) => return Err(err),
@@ -128,10 +138,12 @@ impl Scanner {
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>{}",
                 request_body
             ));
+        log::debug!("< ScanJobs: {request:#?}\nBody: {request_body:#?}");
         let response = match request.send() {
             Ok(response) => response,
             Err(err) => return Err(err.into()),
         };
+        log::debug!("> ScanJobs: {response:#?}");
 
         if !response.status().is_success() {
             return Err(ScannerError {
@@ -188,7 +200,8 @@ impl Display for Scanner {
             f,
             "{}
 - URL: {}
-            self.device_name, self.base_url
+- Capabilities: {:#?}",
+            self.device_name, self.base_url, self.capabilities
         )
     }
 }

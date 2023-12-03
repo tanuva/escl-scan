@@ -7,11 +7,28 @@
 extern crate clap;
 extern crate scan;
 
-use clap::{Args, Parser};
+use clap::{Args, Parser, ValueEnum};
 use scan::scanner::Scanner;
 use scan::scannerfinder::ScannerFinder;
 use std::path::Path;
 use std::process::exit;
+
+#[derive(Clone, ValueEnum)]
+enum CliColorMode {
+    BlackAndWhite,
+    Grayscale,
+    RGB,
+}
+
+impl From<CliColorMode> for String {
+    fn from(value: CliColorMode) -> Self {
+        match value {
+            CliColorMode::BlackAndWhite => "BlackAndWhite1".to_string(),
+            CliColorMode::Grayscale => "Grayscale8".to_string(),
+            CliColorMode::RGB => "RGB24".to_string(),
+        }
+    }
+}
 
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
@@ -30,6 +47,10 @@ struct Cli {
     /// Output file name
     #[arg(value_name = "OUTPUT_FILE_NAME", default_value = "scan.jpg")]
     output_file_name: String,
+
+    /// Color mode
+    #[arg(short, long, value_enum, default_value = "rgb")]
+    color: CliColorMode,
 }
 
 #[derive(Args)]
@@ -72,7 +93,10 @@ fn list_scanners() {
 
 fn get_scanner(cli: &Cli) -> Result<Scanner, String> {
     if let Some(host) = &cli.device.host {
-        return Ok(Scanner::new("Manually Configured", &host, None));
+        return match Scanner::new("Manually Configured", &host, "eSCL") {
+            Ok(scanner) => Ok(scanner),
+            Err(err) => Err(format!("{err}")),
+        };
     }
 
     let scanners = match ScannerFinder::new().find(cli.device.name.as_deref()) {
@@ -117,7 +141,12 @@ fn main() {
         }
     }
 
-    if let Err(err) = scanner.scan(args.dpi, &args.output_file_name) {
+    let mut scan_settings = scanner.make_settings();
+    scan_settings.x_resolution = args.dpi;
+    scan_settings.y_resolution = args.dpi;
+    scan_settings.color_mode = args.color.into();
+
+    if let Err(err) = scanner.scan(&scan_settings, &args.output_file_name) {
         eprintln!("Failed to scan: {err:?}");
         exit(1);
     }
