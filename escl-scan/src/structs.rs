@@ -180,3 +180,59 @@ pub struct ScanSettings {
     #[serde(rename = "scan:YResolution")]
     pub y_resolution: i16,
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::structs::*;
+    use std::io::Read;
+
+    #[test]
+    fn scanner_capabilities() {
+        let xml_file_result =
+            std::fs::File::open("../reference/Brother_MFC-2710DW_Capabilities.xml");
+        assert!(xml_file_result.is_ok());
+        let mut xml = String::new();
+        assert!(xml_file_result
+            .ok()
+            .unwrap()
+            .read_to_string(&mut xml)
+            .is_ok());
+
+        let result = serde_xml_rs::from_str::<ScannerCapabilities>(&xml);
+        if let Err(err) = result {
+            println!("{err}");
+            assert!(false);
+            return;
+        }
+
+        assert!(result.is_ok());
+        let caps = result.ok().unwrap();
+        let setting_profiles = caps.platen.platen_input_caps.setting_profiles.entries;
+        assert!(setting_profiles.len() == 1);
+        let platen_profile = setting_profiles.first().unwrap();
+        let color_modes = &platen_profile.color_modes.entries;
+        assert!(color_modes.len() == 3);
+        assert!(color_modes[0].mode_name == "BlackAndWhite1");
+        assert!(color_modes[1].mode_name == "Grayscale8");
+        assert!(color_modes[2].mode_name == "RGB24");
+    }
+
+    #[test]
+    fn scanner_status() {
+        let xml_file_result =
+            std::fs::File::open("../reference/Brother_MFC-2710DW_ScannerStatus.xml");
+        assert!(xml_file_result.is_ok());
+        let mut xml = String::new();
+        assert!(xml_file_result
+            .ok()
+            .unwrap()
+            .read_to_string(&mut xml)
+            .is_ok());
+
+        let result = serde_xml_rs::from_str::<ScannerStatus>(&xml);
+        assert!(result.is_ok());
+        let status = result.ok().unwrap();
+        assert!(status.state == ScannerState::Idle);
+        // TODO adf_state
+    }
+}

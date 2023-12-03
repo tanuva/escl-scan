@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scan:ScannerStatus xmlns:pwg="http://www.pwg.org/schemas/2010/12/sm"
+    xmlns:scan="http://schemas.hp.com/imaging/escl/2011/05/03"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.hp.com/imaging/escl/2011/05/03 ../../schemas/eSCL-1_92.xsd">
+    <pwg:Version>2.63</pwg:Version>
+    <pwg:State>Idle</pwg:State>
+    <scan:AdfState>ScannerAdfEmpty</scan:AdfState>
+    <scan:Jobs>
+        <scan:JobInfo>
+            <pwg:JobUri>
+/eSCL/ScanJobs/71af3a90-8d5b-11ee-80cb-3c2af4493199
+            </pwg:JobUri>
+            <pwg:JobUuid>urn:uuid:71af3a90-8d5b-11ee-80cb-3c2af4493199</pwg:JobUuid>
+            <scan:Age>289564</scan:Age>
+            <pwg:ImagesCompleted>1</pwg:ImagesCompleted>
+            <pwg:ImagesToTransfer>1</pwg:ImagesToTransfer>
+            <pwg:JobState>Completed</pwg:JobState>
+            <pwg:JobStateReasons>
+                <pwg:JobStateReason>JobCompletedSuccessfully</pwg:JobStateReason>
+            </pwg:JobStateReasons>
+        </scan:JobInfo>
+        <scan:JobInfo>
+            <pwg:JobUri>
+/eSCL/ScanJobs/0381d914-8e8d-11ee-8108-3c2af4493199
+            </pwg:JobUri>
+            <pwg:JobUuid>urn:uuid:0381d914-8e8d-11ee-8108-3c2af4493199</pwg:JobUuid>
+            <scan:Age>285373</scan:Age>
+            <pwg:ImagesCompleted>1</pwg:ImagesCompleted>
+            <pwg:ImagesToTransfer>1</pwg:ImagesToTransfer>
+            <pwg:JobState>Completed</pwg:JobState>
+            <pwg:JobStateReasons>
+                <pwg:JobStateReason>JobCompletedSuccessfully</pwg:JobStateReason>
+            </pwg:JobStateReasons>
+        </scan:JobInfo>
+        <scan:JobInfo>
+            <pwg:JobUri>
+/eSCL/ScanJobs/253b25c7-8e8d-11ee-8109-3c2af4493199
+            </pwg:JobUri>
+            <pwg:JobUuid>urn:uuid:253b25c7-8e8d-11ee-8109-3c2af4493199</pwg:JobUuid>
+            <scan:Age>285324</scan:Age>
+            <pwg:ImagesCompleted>1</pwg:ImagesCompleted>
+            <pwg:ImagesToTransfer>1</pwg:ImagesToTransfer>
+            <pwg:JobState>Completed</pwg:JobState>
+            <pwg:JobStateReasons>
+                <pwg:JobStateReason>JobCompletedSuccessfully</pwg:JobStateReason>
+            </pwg:JobStateReasons>
+        </scan:JobInfo>
+    </scan:Jobs>
+</scan:ScannerStatus>
