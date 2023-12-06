@@ -94,6 +94,7 @@ impl Scanner {
             },
             input_source: "Platen".to_string(),
             color_mode: "RGB24".to_string(),
+            document_format: "image/jpeg".to_string(),
             x_resolution: 300,
             y_resolution: 300,
         }

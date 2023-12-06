@@ -175,6 +175,8 @@ pub struct ScanSettings {
     pub input_source: String,
     #[serde(rename = "scan:ColorMode")]
     pub color_mode: String,
+    #[serde(rename = "scan:DocumentFormatExt")]
+    pub document_format: String,
     #[serde(rename = "scan:XResolution")]
     pub x_resolution: i16,
     #[serde(rename = "scan:YResolution")]

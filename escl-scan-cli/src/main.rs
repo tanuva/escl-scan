@@ -30,6 +30,21 @@ impl From<CliColorMode> for String {
     }
 }
 
+#[derive(Clone, ValueEnum)]
+enum CliOutputFormat {
+    JPG,
+    PDF,
+}
+
+impl From<CliOutputFormat> for String {
+    fn from(value: CliOutputFormat) -> Self {
+        match value {
+            CliOutputFormat::JPG => "image/jpeg".to_string(),
+            CliOutputFormat::PDF => "application/pdf".to_string(),
+        }
+    }
+}
+
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
@@ -47,6 +62,10 @@ struct Cli {
     /// Output file name
     #[arg(value_name = "OUTPUT_FILE_NAME", default_value = "scan.jpg")]
     output_file_name: String,
+
+    /// Output document format
+    #[arg(short, long, value_enum, default_value = "jpg")]
+    output_format: CliOutputFormat,
 
     /// Color mode
     #[arg(short, long, value_enum, default_value = "rgb")]
@@ -145,6 +164,7 @@ fn main() {
     scan_settings.x_resolution = args.dpi;
     scan_settings.y_resolution = args.dpi;
     scan_settings.color_mode = args.color.into();
+    scan_settings.document_format = args.output_format.into();
 
     if let Err(err) = scanner.scan(&scan_settings, &args.output_file_name) {
         eprintln!("Failed to scan: {err:?}");
