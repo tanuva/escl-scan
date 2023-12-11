@@ -112,27 +112,6 @@ impl Scanner {
         };
 
         log::info!("Sending scan request with settings: {:?}", scan_settings);
-        let scan_response = match self.get_scan_response(request_body) {
-            Ok(response) => response,
-            Err(err) => return Err(err),
-        };
-        let location = match scan_response.headers().get("location") {
-            Some(location) => location.to_str().expect("'location' can be a string"),
-            None => {
-                return Err(ScannerError {
-                    code: ErrorCode::ProtocolError,
-                    message: format!(
-                        "Failed to get 'location' header from response:\n{scan_response:?}"
-                    ),
-                });
-            }
-        };
-
-        let download_url = format!("{}/NextDocument", location);
-        return self.download_page(&download_url, destination_file);
-    }
-
-    fn get_scan_response(&self, request_body: String) -> Result<Response, ScannerError> {
         let client = reqwest::blocking::Client::new();
         let request = client
             .post(format!("{}/ScanJobs", &self.base_url).as_str())
@@ -141,6 +120,7 @@ impl Scanner {
                 request_body
             ));
         log::debug!("< ScanJobs: {request:#?}\nBody: {request_body:#?}");
+
         let response = match request.send() {
             Ok(response) => response,
             Err(err) => return Err(err.into()),
@@ -150,11 +130,24 @@ impl Scanner {
         if !response.status().is_success() {
             return Err(ScannerError {
                 code: ErrorCode::NetworkError,
-                message: format!("{response:?}"),
+                message: format!("{response:#?}"),
             });
         }
 
-        return Ok(response);
+        let location = match response.headers().get("location") {
+            Some(location) => location.to_str().expect("'location' can be a string"),
+            None => {
+                return Err(ScannerError {
+                    code: ErrorCode::ProtocolError,
+                    message: format!(
+                        "Failed to get 'location' header from response:\n{response:#?}"
+                    ),
+                });
+            }
+        };
+
+        let download_url = format!("{}/NextDocument", location);
+        return self.download_page(&download_url, destination_file);
     }
 
     fn download_page(
