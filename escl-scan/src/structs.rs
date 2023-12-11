@@ -164,6 +164,36 @@ pub struct ScanRegion {
     pub content_region_units: String,
 }
 
+impl ScanRegion {
+    fn from_mm(width: usize, height: usize) -> ScanRegion {
+        let mm_to_300th_inch_factor: f32 = 0.03937 * 300.0;
+        ScanRegion {
+            x_offset: 0,
+            y_offset: 0,
+            width: (width as f32 * mm_to_300th_inch_factor) as i16,
+            height: (height as f32 * mm_to_300th_inch_factor) as i16,
+            content_region_units: "escl:ThreeHundredthsOfInches".to_string(),
+        }
+    }
+
+    pub fn a4_portrait() -> ScanRegion {
+        Self::from_mm(210, 297)
+    }
+
+    pub fn a5_portrait() -> ScanRegion {
+        Self::from_mm(148, 210)
+    }
+
+    pub fn a5_landscape() -> ScanRegion {
+        Self::from_mm(210, 148)
+    }
+
+    pub fn us_letter_portrait() -> ScanRegion {
+        // Slightly rounded values...
+        Self::from_mm(216, 279)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename = "scan:ScanSettings")]
 pub struct ScanSettings {
@@ -177,10 +207,29 @@ pub struct ScanSettings {
     pub color_mode: String,
     #[serde(rename = "scan:DocumentFormatExt")]
     pub document_format: String,
+    #[serde(rename = "scan:FeedDirection")]
+    pub feed_direction: String,
     #[serde(rename = "scan:XResolution")]
     pub x_resolution: i16,
     #[serde(rename = "scan:YResolution")]
     pub y_resolution: i16,
+}
+
+#[derive(Default, Debug, Deserialize, Serialize)]
+#[serde(rename = "$value")]
+pub enum FeedDirection {
+    LongEdgeFeed,
+    #[default]
+    ShortEdgeFeed,
+}
+
+impl From<FeedDirection> for String {
+    fn from(value: FeedDirection) -> Self {
+        match value {
+            FeedDirection::LongEdgeFeed => "LongEdgeFeed".to_string(),
+            FeedDirection::ShortEdgeFeed => "ShortEdgeFeed".to_string(),
+        }
+    }
 }
 
 #[cfg(test)]

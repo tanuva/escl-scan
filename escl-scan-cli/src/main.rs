@@ -10,6 +10,7 @@ extern crate scan;
 use clap::{Args, Parser, ValueEnum};
 use scan::scanner::Scanner;
 use scan::scannerfinder::ScannerFinder;
+use scan::structs::{self};
 use std::path::Path;
 use std::process::exit;
 
@@ -45,11 +46,34 @@ impl From<CliOutputFormat> for String {
     }
 }
 
+#[derive(Clone, ValueEnum)]
+enum CliDocumentSize {
+    A4Portrait,
+    A5Landscape,
+    A5Portrait,
+    USLetterPortrait,
+}
+
+impl From<CliDocumentSize> for structs::ScanRegion {
+    fn from(value: CliDocumentSize) -> Self {
+        match value {
+            CliDocumentSize::A4Portrait => structs::ScanRegion::a4_portrait(),
+            CliDocumentSize::A5Landscape => structs::ScanRegion::a5_landscape(),
+            CliDocumentSize::A5Portrait => structs::ScanRegion::a5_portrait(),
+            CliDocumentSize::USLetterPortrait => structs::ScanRegion::us_letter_portrait(),
+        }
+    }
+}
+
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
     #[command(flatten)]
     device: DeviceArgs,
+
+    /// Input document format
+    #[arg(short, long, value_enum, default_value = "a4-portrait")]
+    input_format: CliDocumentSize,
 
     /// Overwrite the output file if it already exists
     #[arg(short = 'f', long = "force")]
@@ -165,6 +189,8 @@ fn main() {
     scan_settings.y_resolution = args.dpi;
     scan_settings.color_mode = args.color.into();
     scan_settings.document_format = args.output_format.into();
+    scan_settings.scan_regions = args.input_format.into();
+    scan_settings.feed_direction = structs::FeedDirection::ShortEdgeFeed.into();
 
     if let Err(err) = scanner.scan(&scan_settings, &args.output_file_name) {
         eprintln!("Failed to scan: {err:?}");
