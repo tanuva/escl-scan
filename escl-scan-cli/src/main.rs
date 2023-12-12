@@ -11,7 +11,6 @@ use clap::{Args, Parser, ValueEnum};
 use scan::scanner::Scanner;
 use scan::scannerfinder::ScannerFinder;
 use scan::structs::{self};
-use std::path::Path;
 use std::process::exit;
 
 #[derive(Clone, ValueEnum)]
@@ -74,10 +73,6 @@ struct Cli {
     /// Input document format
     #[arg(short, long, value_enum, default_value = "a4-portrait")]
     input_format: CliDocumentSize,
-
-    /// Overwrite the output file if it already exists
-    #[arg(short = 'f', long = "force")]
-    overwrite: bool,
 
     /// Scan resolution in DPI (Dots Per Inch)
     #[arg(short = 'r', long = "resolution", default_value = "300")]
@@ -170,11 +165,6 @@ fn main() {
             exit(1);
         }
     };
-
-    if !args.overwrite && Path::new(&args.output_file_name).exists() {
-        eprintln!("Output file exists, exiting...");
-        exit(1);
-    }
 
     match scanner.get_status() {
         Ok(state) => println!("Scanner state: {state}"),
