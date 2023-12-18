@@ -10,7 +10,10 @@ use core::fmt;
 pub enum ErrorCode {
     FilesystemError,
     NetworkError,
+    NoFileExtension,
+    NoMorePages,
     NoScannerFound,
+    PdfError,
     ProtocolError,
     ScannerNotReady,
 }
@@ -26,14 +29,31 @@ impl fmt::Display for ScannerError {
         let msg = match self.code {
             ErrorCode::FilesystemError => format!("File System Error: {}", self.message),
             ErrorCode::NetworkError => format!("Network Error: {}", self.message),
+            ErrorCode::NoFileExtension => format!(
+                "Specified output file does not have a file extension: {}",
+                self.message
+            ),
+            ErrorCode::NoMorePages => {
+                "There are no more scanned pages available for download".to_string()
+            }
             ErrorCode::NoScannerFound => {
                 format!("No scanner found where name contains \"{}\"", self.message)
             }
+            ErrorCode::PdfError => format!("PDF processing error: {}", self.message),
             ErrorCode::ProtocolError => format!("eSCL Protocol Error: {}", self.message),
             ErrorCode::ScannerNotReady => "The scanner is not ready to scan".to_string(),
         };
 
         write!(f, "{}", msg)
+    }
+}
+
+impl From<lopdf::Error> for ScannerError {
+    fn from(error: lopdf::Error) -> Self {
+        ScannerError {
+            code: ErrorCode::PdfError,
+            message: error.to_string(),
+        }
     }
 }
 
