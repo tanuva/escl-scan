@@ -109,7 +109,11 @@ impl Scanner {
         if response.status().is_client_error() || response.status().is_server_error() {
             return Err(ScannerError {
                 code: ErrorCode::NetworkError,
-                message: format!("{response:#?}"),
+                message: format!(
+                    "Status Code: {:?}, Text: {}",
+                    response.status(),
+                    response.text()?
+                ),
             });
         }
 
