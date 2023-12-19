@@ -51,11 +51,7 @@ impl ScannerFinder {
         browser.set_service_discovered_callback(Box::new(Self::on_service_discovered));
         browser.set_context(Box::new(Arc::clone(&self.scanners)));
 
-        let event_loop = match browser.browse_services() {
-            Ok(event_loop) => event_loop,
-            Err(err) => return Err(err.into()),
-        };
-
+        let event_loop = browser.browse_services()?;
         let timeout = Duration::from_secs(5);
         let end_time = Instant::now() + timeout;
         while Instant::now() < end_time {

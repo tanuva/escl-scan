@@ -30,18 +30,11 @@ impl Scanner {
     }
 
     fn get_capabilities(base_url: &str) -> Result<structs::ScannerCapabilities, ScannerError> {
-        let response = match reqwest::blocking::get(&format!("{}/ScannerCapabilities", base_url)) {
-            Ok(response) => response,
-            Err(err) => return Err(err.into()),
-        };
-
+        let response = reqwest::blocking::get(&format!("{}/ScannerCapabilities", base_url))?;
         let response_string = response.text().expect("text is a string");
         log::debug!("> Capabilities: {response_string}");
         let scanner_capabilities: structs::ScannerCapabilities =
-            match serde_xml_rs::from_str(&response_string) {
-                Ok(caps) => caps,
-                Err(err) => return Err(err.into()),
-            };
+            serde_xml_rs::from_str(&response_string)?;
         Ok(scanner_capabilities)
     }
 
@@ -51,10 +44,7 @@ impl Scanner {
         resource_root: &str,
     ) -> Result<Scanner, ScannerError> {
         let base_url = Scanner::make_base_url(ip_or_host, resource_root);
-        let capabilities = match Self::get_capabilities(&base_url) {
-            Ok(caps) => caps,
-            Err(err) => return Err(err),
-        };
+        let capabilities = Self::get_capabilities(&base_url)?;
 
         Ok(Scanner {
             device_name: device_name.to_string(),
@@ -65,22 +55,15 @@ impl Scanner {
 
     pub fn get_status(&self) -> Result<structs::ScannerState, ScannerError> {
         log::info!("Getting scanner status");
-        let response = match reqwest::blocking::get(&format!("{}/ScannerStatus", self.base_url)) {
-            Ok(response) => response,
-            Err(err) => return Err(err.into()),
-        };
+        let response = reqwest::blocking::get(&format!("{}/ScannerStatus", self.base_url))?;
         log::debug!("ScannerStatus: {:?}", response);
 
         let response_string = response.text().expect("text is a string");
         log::debug!("ScannerStatus: {:?}", response_string);
 
-        let scanner_status: structs::ScannerStatus = match serde_xml_rs::from_str(&response_string)
-        {
-            Ok(status) => status,
-            Err(err) => return Err(err.into()),
-        };
-
+        let scanner_status: structs::ScannerStatus = serde_xml_rs::from_str(&response_string)?;
         log::info!("Scanner state: {}", scanner_status.state);
+
         Ok(scanner_status.state)
     }
 
@@ -108,10 +91,7 @@ impl Scanner {
         scan_settings: &structs::ScanSettings,
         destination_file: &str,
     ) -> Result<(), ScannerError> {
-        let request_body = match serde_xml_rs::to_string(scan_settings) {
-            Ok(body) => body,
-            Err(err) => return Err(err.into()),
-        };
+        let request_body = serde_xml_rs::to_string(scan_settings)?;
 
         log::info!("Sending scan request with settings: {:?}", scan_settings);
         let client = reqwest::blocking::Client::new();
@@ -123,10 +103,7 @@ impl Scanner {
             ));
         log::debug!("< ScanJobs: {request:#?}\nBody: {request_body:#?}");
 
-        let response = match request.send() {
-            Ok(response) => response,
-            Err(err) => return Err(err.into()),
-        };
+        let response = request.send()?;
         log::debug!("> ScanJobs: {response:#?}");
 
         if !response.status().is_success() {
@@ -208,11 +185,7 @@ impl Scanner {
         download_url: &str,
         destination_file: &mut fs::File,
     ) -> Result<(), ScannerError> {
-        let mut response = match reqwest::blocking::get(download_url) {
-            Ok(response) => response,
-            Err(err) => return Err(err.into()),
-        };
-
+        let mut response = reqwest::blocking::get(download_url)?;
         if response.status() == 404 {
             return Err(ScannerError {
                 code: ErrorCode::NoMorePages,
@@ -220,10 +193,7 @@ impl Scanner {
             });
         }
 
-        if let Err(err) = response.copy_to(destination_file) {
-            return Err(err.into());
-        }
-
+        response.copy_to(destination_file)?;
         Ok(())
     }
 
@@ -303,16 +273,7 @@ impl Scanner {
         assert!(output_path.is_file());
         assert!(page_path.is_file());
 
-        let documents = vec![
-            match Document::load(output_path) {
-                Ok(doc) => doc,
-                Err(err) => return Err(err.into()),
-            },
-            match Document::load(page_path) {
-                Ok(doc) => doc,
-                Err(err) => return Err(err.into()),
-            },
-        ];
+        let documents = vec![Document::load(output_path)?, Document::load(page_path)?];
 
         // Define a starting max_id (will be used as start index for object_ids)
         let mut max_id = 1;
@@ -404,7 +365,6 @@ impl Scanner {
         // If no "Pages" object found abort
         if pages_object.is_none() {
             println!("Pages root not found.");
-
             return Ok(());
         }
 
@@ -413,7 +373,6 @@ impl Scanner {
             if let Ok(dictionary) = object.as_dict() {
                 let mut dictionary = dictionary.clone();
                 dictionary.set("Parent", pages_object.as_ref().unwrap().0);
-
                 document
                     .objects
                     .insert(*object_id, Object::Dictionary(dictionary));
@@ -423,7 +382,6 @@ impl Scanner {
         // If no "Catalog" found abort
         if catalog_object.is_none() {
             println!("Catalog root not found.");
-
             return Ok(());
         }
 
@@ -456,7 +414,6 @@ impl Scanner {
             let mut dictionary = dictionary.clone();
             dictionary.set("Pages", pages_object.0);
             dictionary.remove(b"Outlines"); // Outlines not supported in merged PDFs
-
             document
                 .objects
                 .insert(catalog_object.0, Object::Dictionary(dictionary));
