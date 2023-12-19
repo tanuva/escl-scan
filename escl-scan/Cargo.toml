@@ -1,6 +1,6 @@
 [package]
 name = "escl-scan"
-version = "0.1.4"
+version = "0.2.0"
 authors = ["ElXreno <elxreno@gmail.com>", "Marcel Kummer <tanuva@posteo.de>"]
 repository = "https://github.com/tanuva/escl-scan"
 readme = "README.md"

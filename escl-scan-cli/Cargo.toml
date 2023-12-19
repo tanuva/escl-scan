@@ -3,7 +3,7 @@ name = "escl-scan-cli"
 description = """
 Scans documents from an eSCL-speaking scanner on the network. The first
 discovered scanner will be used if neither --name nor --host are provided."""
-version = "0.1.4"
+version = "0.2.0"
 authors = ["ElXreno <elxreno@gmail.com>", "Marcel Kummer <tanuva@posteo.de>"]
 repository = "https://github.com/tanuva/escl-scan"
 readme = "README.md"
