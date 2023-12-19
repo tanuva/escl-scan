@@ -65,11 +65,32 @@ impl From<CliDocumentSize> for structs::ScanRegion {
     }
 }
 
+#[derive(Clone, ValueEnum)]
+enum CliInputSource {
+    Camera,
+    Feeder,
+    Platen,
+}
+
+impl From<CliInputSource> for String {
+    fn from(value: CliInputSource) -> Self {
+        match value {
+            CliInputSource::Camera => "scan:Camera".into(),
+            CliInputSource::Feeder => "Feeder".into(),
+            CliInputSource::Platen => "Platen".into(),
+        }
+    }
+}
+
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
     #[command(flatten)]
     device: DeviceArgs,
+
+    /// Document source
+    #[arg(short = 's', long = "source", value_enum, default_value = "platen")]
+    input_source: CliInputSource,
 
     /// Input document format
     #[arg(short, long, value_enum, default_value = "a4-portrait")]
@@ -184,6 +205,7 @@ fn main() {
     scan_settings.y_resolution = args.dpi;
     scan_settings.color_mode = args.color.into();
     scan_settings.document_format = args.output_format.into();
+    scan_settings.input_source = args.input_source.into();
     scan_settings.scan_regions = args.input_format.into();
     scan_settings.feed_direction = structs::FeedDirection::ShortEdgeFeed.into();
 
