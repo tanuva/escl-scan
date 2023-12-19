@@ -106,7 +106,7 @@ impl Scanner {
         let response = request.send()?;
         log::debug!("> ScanJobs: {response:#?}");
 
-        if !response.status().is_success() {
+        if response.status().is_client_error() || response.status().is_server_error() {
             return Err(ScannerError {
                 code: ErrorCode::NetworkError,
                 message: format!("{response:#?}"),
