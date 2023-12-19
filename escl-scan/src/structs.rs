@@ -199,10 +199,10 @@ impl ScanRegion {
 pub struct ScanSettings {
     #[serde(rename = "pwg:Version")]
     pub version: String,
+    #[serde(rename = "pwg:InputSource")]
+    pub input_source: String,
     #[serde(rename = "pwg:ScanRegions")]
     pub scan_regions: ScanRegion,
-    #[serde(rename = "scan:InputSource")]
-    pub input_source: String,
     #[serde(rename = "scan:ColorMode")]
     pub color_mode: String,
     #[serde(rename = "scan:DocumentFormatExt")]
