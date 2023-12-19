@@ -104,7 +104,7 @@ struct Cli {
     #[arg(value_name = "OUTPUT_FILE_NAME", default_value = "scan.jpg")]
     output_file_name: String,
 
-    /// Base path for output file
+    /// Base path; will be prepended to the given output file name
     #[arg(short = 'b', long = "base-path")]
     output_base_path: Option<PathBuf>,
 
