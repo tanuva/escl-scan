@@ -11,6 +11,7 @@ use clap::{Args, Parser, ValueEnum};
 use scan::scanner::Scanner;
 use scan::scannerfinder::ScannerFinder;
 use scan::structs::{self};
+use std::path::PathBuf;
 use std::process::exit;
 
 #[derive(Clone, ValueEnum)]
@@ -81,6 +82,10 @@ struct Cli {
     /// Output file name
     #[arg(value_name = "OUTPUT_FILE_NAME", default_value = "scan.jpg")]
     output_file_name: String,
+
+    /// Base path for output file
+    #[arg(short = 'b', long = "base-path")]
+    output_base_path: Option<PathBuf>,
 
     /// Output document format
     #[arg(short, long, value_enum, default_value = "jpg")]
@@ -182,7 +187,17 @@ fn main() {
     scan_settings.scan_regions = args.input_format.into();
     scan_settings.feed_direction = structs::FeedDirection::ShortEdgeFeed.into();
 
-    if let Err(err) = scanner.scan(&scan_settings, &args.output_file_name) {
+    let destination_file_name = if let Some(base_path) = args.output_base_path {
+        base_path
+            .join(args.output_file_name)
+            .to_str()
+            .expect("Path is printable")
+            .to_string()
+    } else {
+        args.output_file_name
+    };
+
+    if let Err(err) = scanner.scan(&scan_settings, &destination_file_name) {
         eprintln!("Failed to scan: {err:?}");
         exit(1);
     }
