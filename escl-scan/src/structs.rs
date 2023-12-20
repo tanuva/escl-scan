@@ -21,11 +21,11 @@ pub struct PlatenInputCaps {
     #[serde(rename = "MinWidth", default)]
     pub min_width: u16,
     #[serde(rename = "MaxWidth", default)]
-    pub max_width: i16,
+    pub max_width: u16,
     #[serde(rename = "MinHeight", default)]
-    pub min_height: i16,
+    pub min_height: u16,
     #[serde(rename = "MaxHeight", default)]
-    pub max_height: i16,
+    pub max_height: u16,
     #[serde(rename = "MaxScanRegions", default)]
     pub max_scan_regions: u16,
     #[serde(rename = "SettingProfiles")]
@@ -157,9 +157,9 @@ pub struct ScanRegion {
     #[serde(rename = "pwg:YOffset")]
     pub y_offset: i16,
     #[serde(rename = "pwg:Width")]
-    pub width: i16,
+    pub width: u16,
     #[serde(rename = "pwg:Height")]
-    pub height: i16,
+    pub height: u16,
     #[serde(rename = "pwg:ContentRegionUnits")]
     pub content_region_units: String,
 }
@@ -170,8 +170,8 @@ impl ScanRegion {
         ScanRegion {
             x_offset: 0,
             y_offset: 0,
-            width: (width as f32 * mm_to_300th_inch_factor) as i16,
-            height: (height as f32 * mm_to_300th_inch_factor) as i16,
+            width: (width as f32 * mm_to_300th_inch_factor) as u16,
+            height: (height as f32 * mm_to_300th_inch_factor) as u16,
             content_region_units: "escl:ThreeHundredthsOfInches".to_string(),
         }
     }
