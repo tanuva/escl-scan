@@ -221,12 +221,9 @@ fn main() {
         }
     };
 
-    match scanner.get_status() {
-        Ok(state) => println!("Scanner state: {state}"),
-        Err(err) => {
-            eprintln!("Failed to get status: {err:?}");
-            exit(1);
-        }
+    if let Err(err) = scanner.get_status() {
+        eprintln!("Failed to get status: {err:?}");
+        exit(1);
     }
 
     let mut scan_settings = scanner.make_settings();
