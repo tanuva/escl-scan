@@ -55,7 +55,8 @@ impl ScannerFinder {
         let timeout = Duration::from_secs(5);
         let end_time = Instant::now() + timeout;
         while Instant::now() < end_time {
-            event_loop.poll(end_time - Instant::now()).unwrap();
+            log::info!("Polling for scanners...");
+            event_loop.poll(Duration::from_millis(100)).unwrap();
 
             if let Some(name) = name {
                 if self.scanner_found(name) {
