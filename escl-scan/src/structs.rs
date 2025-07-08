@@ -199,6 +199,8 @@ impl ScanRegion {
 pub struct ScanSettings {
     #[serde(rename = "pwg:Version")]
     pub version: String,
+    #[serde(rename = "pwg:ContentType")]
+    pub content_type: String,
     #[serde(rename = "pwg:InputSource")]
     pub input_source: String,
     #[serde(rename = "pwg:ScanRegions")]

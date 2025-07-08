@@ -77,6 +77,7 @@ impl Scanner {
                 height: self.capabilities.platen.platen_input_caps.max_height,
                 content_region_units: "escl:ThreeHundredthsOfInches".to_string(),
             },
+            content_type: "Auto".to_string(),
             input_source: "Platen".to_string(),
             color_mode: "RGB24".to_string(),
             document_format: "image/jpeg".to_string(),
