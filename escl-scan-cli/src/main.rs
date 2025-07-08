@@ -82,6 +82,31 @@ impl From<CliInputSource> for String {
     }
 }
 
+#[derive(Clone, ValueEnum)]
+enum CliContentType {
+    Photo,
+    Text,
+    TextAndPhoto,
+    LineArt,
+    Magazine,
+    Halftone,
+    Auto,
+}
+
+impl From<CliContentType> for String {
+    fn from(value: CliContentType) -> Self {
+        match value {
+            CliContentType::Photo => "Photo".into(),
+            CliContentType::Text => "Text".into(),
+            CliContentType::TextAndPhoto => "TextAndPhoto".into(),
+            CliContentType::LineArt => "LineArt".into(),
+            CliContentType::Magazine => "Magazine".into(),
+            CliContentType::Halftone => "Halftone".into(),
+            CliContentType::Auto => "Auto".into(),
+        }
+    }
+}
+
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
@@ -115,6 +140,10 @@ struct Cli {
     /// Color mode
     #[arg(short, long, value_enum, default_value = "rgb")]
     color: CliColorMode,
+
+    /// Content type
+    #[arg(short = 't', long = "type", value_enum, default_value = "auto")]
+    content_type: CliContentType,
 }
 
 #[derive(Args)]
@@ -204,6 +233,7 @@ fn main() {
     scan_settings.x_resolution = args.dpi;
     scan_settings.y_resolution = args.dpi;
     scan_settings.color_mode = args.color.into();
+    scan_settings.content_type = args.content_type.into();
     scan_settings.document_format = args.output_format.into();
     scan_settings.input_source = args.input_source.into();
     scan_settings.scan_regions = args.input_format.into();
